@@ -1,0 +1,114 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<script>
+
+    // Define the Cookie for the submit_handler
+    function getCookie(name){
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length ==2) return parts.pop().split(';').shift();
+    }
+
+    // Like function when the like buttion is on click event
+    function like_submit_handler(post_id, post_likes_count)
+    {
+        var likes_number = parseInt(post_likes_count);
+        likes_number += 1;
+
+        // fetch API when send the data from the Java Script to Python (viewer)
+        // Pass the id of the post which is liked by current user in JSON format
+        // Then backend can save it into the database 
+        fetch(`/like/${post_id}`, {
+            method: "POST",
+            headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
+            body: JSON.stringify({
+                post_of_id: post_id,
+                likes_count: likes_number    
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            // Then update teh client side the number of likes
+            document.querySelector("#number_of_likes").innerHTML = `${likes_number} likes`;
+            console.log(result);
+            window.location.reload();
+        });
+    }
+
+    // Unlike function when the like buttion is on click event
+    function unlike_submit_handler(post_id, post_likes_count)
+    {
+        var likes_number = parseInt(post_likes_count);
+        likes_number -= 1;
+
+        // fetch API when send the data from the Java Script to Python (viewer)
+        // Pass the id of the post which is liked by current user in JSON format
+        // Then backend can save it into the database 
+        fetch(`/unlike/${post_id}`, {
+            method: "POST",
+            headers: {"Content-type": "application/json", "X-CSRFToken": getCookie("csrftoken")},
+            body: JSON.stringify({
+                post_of_id: post_id,
+                likes_count: likes_number    
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            // Then update teh client side the number of likes
+            document.querySelector("#number_of_likes").innerHTML = `${likes_number} likes`;
+            console.log(result);
+            window.location.reload();
+        });
+    }
+
+</script>
+
+<div id="all_posts">
+    {% for post in posts_of_the_page %}
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title"><a href="{% url 'profile' post.owner.id %}">@{{post.owner.username}}</a></h5>
+            <form action="{% url 'unfollow'%}" method="post">
+                {% csrf_token %}
+                <input type="hidden" value="{{post.owner.username}}" name="owner_post_username">
+                <input type="hidden" value="{{current_user.username}}" name="current_user">
+                <input class="btn btn-primary" type="submit" value="Unfollow">
+            </form>
+            <p class="card-text" id="content_{{post.id}}">{{post.content}}</p>
+            <p class="card-text">{{post.timestamp}} </p>
+            <p class="card-text" id="number_of_likes">{{post.likes_count}} likes</p>
+            
+            {% if post.id not in list_posts_current_user_liked %}
+                <button id="like_button" class="btn btn-primary" onclick="like_submit_handler({{post.id}}, {{post.likes_count}})"><i class="fas fa-thumbs-up"></i></button>
+            {% else %}
+                <button id="unlike_button" class="btn btn-primary" onclick="unlike_submit_handler({{post.id}}, {{post.likes_count}})"><i class="fas fa-thumbs-down"></i></button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        {% if posts_of_the_page.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ posts_of_the_page.previous_page_number }}">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ posts_of_the_page.previous_page_number }}">{{ posts_of_the_page.previous_page_number }}</a></li>
+        {% endif %}
+        
+        <li class="page-item"><a class="page-link" href="?page={{ posts_of_the_page }}">{{ posts_of_the_page.number }}</a></li>
+        
+        {% if posts_of_the_page.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ posts_of_the_page.next_page_number}}">{{ posts_of_the_page.next_page_number}}</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ posts_of_the_page.next_page_number}}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+
+{% endblock %}
+    
+
+
