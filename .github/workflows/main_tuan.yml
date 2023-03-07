@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'Tuan'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5F6A2AA787F045D6ADA53A6C7B9BDCF3 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C9DBA51E705E4BC4BCA87447C8376499 }}
