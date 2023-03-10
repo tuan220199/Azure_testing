@@ -15,7 +15,7 @@ def index(request):
     current_user = request.user
 
     #Find the number and the list of following user by the owner
-    followers = Follower.objects.filter(followers=current_user)
+    followers = Follower.objects.filter(followers=current_user.id)
     list_following_of_owner = []
     for follower in followers:
         list_following_of_owner.append(follower.being_followered.username)
